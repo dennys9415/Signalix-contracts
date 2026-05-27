@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signalix DB Conceptual Schema",
+  "version": "0.1.0",
+  "description": "Real SQL migrations live in Signalix-api."
+}

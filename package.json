@@ -1,0 +1,16 @@
+{
+  "name": "@signalix/contracts",
+  "version": "0.1.0",
+  "description": "Shared API, WebSocket, protocol, and DTO contracts for Signalix.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
