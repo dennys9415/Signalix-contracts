@@ -48,3 +48,12 @@ export interface UpdateMessageStatusRequest {
   messageId: UUID;
   status: MessageStatus.DELIVERED | MessageStatus.READ;
 }
+
+export interface DeleteMessageForMeRequest {
+  messageId: UUID;
+}
+
+export interface DeleteMessageForMeResponse {
+  messageId: UUID;
+  deletedAt: ISODateString;
+}

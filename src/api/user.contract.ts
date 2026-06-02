@@ -25,3 +25,12 @@ export interface ExactUsernameLookupRequest {
 export interface ExactUsernameLookupResponse {
   user: PublicUserDTO | null;
 }
+
+export interface UserSearchRequest {
+  q: string;
+  limit?: number; // default 10, max 25
+}
+
+export interface UserSearchResponse {
+  users: PublicUserDTO[];
+}
