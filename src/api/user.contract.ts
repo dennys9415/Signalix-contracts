@@ -34,3 +34,8 @@ export interface UserSearchRequest {
 export interface UserSearchResponse {
   users: PublicUserDTO[];
 }
+
+export interface UserProfileResponse {
+  user: UserDTO;
+  providers: string[];
+}
