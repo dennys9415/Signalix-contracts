@@ -8,6 +8,7 @@ export interface ChatDTO {
   createdBy: UUID;
   createdAt: ISODateString;
   participants: ChatParticipantDTO[];
+  unreadCount: number;
 }
 
 export interface ChatParticipantDTO {
@@ -20,4 +21,15 @@ export interface ChatParticipantDTO {
 
 export interface DirectChatLookupRequest {
   recipientUsername: string;
+}
+
+export interface DeleteChatForMeResponse {
+  chatId: UUID;
+  deletedAt: ISODateString;
+}
+
+export interface MarkChatReadResponse {
+  chatId: UUID;
+  lastReadMessageId?: UUID;
+  lastReadAt: ISODateString;
 }
