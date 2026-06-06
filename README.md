@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.2.0**
+**Version: v0.5.0**
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -22,14 +22,14 @@ Single source of truth for all shared types, events, and enums across the Signal
 |---|---|
 | `auth.contract.ts` | `RegisterRequest`, `LoginRequest`, `RefreshTokenRequest`, `AuthSessionDTO`, `ForgotPasswordRequest/Response`, `ResetPasswordRequest/Response`, `VerifyEmailRequest/Response`, `ResendVerificationRequest/Response` |
 | `user.contract.ts` | `UserDTO`, `PublicUserDTO`, `ExactUsernameLookupResponse`, `UserSearchRequest/Response`, `UserProfileResponse` |
-| `chat.contract.ts` | `ChatDTO`, `ParticipantDTO` |
-| `message.contract.ts` | `MessageDTO`, `GetMessagesResponse`, `SendMessageRequest/Response`, `UpdateMessageStatusRequest/Response`, `DeleteMessageForMeRequest/Response` |
+| `chat.contract.ts` | `ChatDTO`, `ChatParticipantDTO`, `DeleteChatForMeResponse`, `MarkChatReadResponse`, `CreateGroupChatRequest/Response`, `AddGroupMembersRequest`, `GroupMemberUpdateResponse`, `RemoveGroupMemberResponse`, `UpdateGroupChatRequest/Response` |
+| `message.contract.ts` | `MessageDTO`, `MessageReactionDTO`, `ReplyPreviewDTO`, `LinkPreviewDTO`, `GetMessagesRequest/Response`, `SendMessageRequest/Response`, `UpdateMessageStatusRequest/Response`, `DeleteMessageForMeRequest/Response`, `DeleteMessageForEveryoneRequest/Response`, `EditMessageRequest/Response`, `AddReactionRequest`, `ReactionResponse` |
 | `presence.contract.ts` | `PresenceDTO`, `GetPresenceRequest/Response`, `UpdatePresenceRequest/Response` |
 | `device.contract.ts` | `DeviceDTO` |
 
 ### Error codes (`src/errors/error-code.enum.ts`)
 
-`USERNAME_TAKEN`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `TOKEN_EXPIRED`, `DEVICE_LIMIT_REACHED`, `CHAT_NOT_FOUND`, `MESSAGE_NOT_FOUND`, `USER_NOT_FOUND`, `INVALID_RESET_TOKEN`, `INVALID_VERIFICATION_TOKEN`
+`UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`, `USER_NOT_FOUND`, `USERNAME_TAKEN`, `INVALID_CREDENTIALS`, `CHAT_NOT_FOUND`, `DIRECT_CHAT_ALREADY_EXISTS`, `MESSAGE_NOT_FOUND`, `INVALID_MESSAGE_STATE`, `DEVICE_LIMIT_REACHED`, `SESSION_REVOKED`, `WS_INVALID_EVENT`, `WS_AUTH_REQUIRED`, `INVALID_RESET_TOKEN`, `INVALID_VERIFICATION_TOKEN`
 
 ### WebSocket contracts (`src/websocket/`)
 
@@ -74,7 +74,7 @@ Signalix-contracts
 
 Changes to contracts require rebuilding all three downstream services.
 
-## v0.2.0 feature coverage
+## v0.5.0 feature coverage
 
 | Feature | Included |
 |---|---|
@@ -84,28 +84,53 @@ Changes to contracts require rebuilding all three downstream services.
 | Password reset (forgot + reset) | ✓ |
 | Email verification (verify + resend) | ✓ |
 | Direct 1-to-1 chats | ✓ |
+| Group chats (create, rename, add / remove members, leave) | ✓ |
 | Text messages (`ciphertext`) | ✓ |
+| Image messages | ✓ |
+| File attachments | ✓ |
 | Sent / delivered / read status | ✓ |
-| Delete for me | ✓ |
-| Global presence (online / offline) | ✓ |
-| Exact username lookup | ✓ |
-| Partial username search | ✓ |
-| User profile (display name, avatar, providers) | ✓ |
+| Delete message for me | ✓ |
+| Delete message for everyone | ✓ |
+| Delete chat for me | ✓ |
+| Edit message | ✓ |
+| Reply to message (`ReplyPreviewDTO`) | ✓ |
+| Forward message (`isForwarded` flag) | ✓ |
+| Emoji reactions (`MessageReactionDTO`) | ✓ |
+| Link preview metadata (`LinkPreviewDTO`) | ✓ |
+| Typing indicators (`client.typing.*`, `server.typing.*`) | ✓ |
+| Global presence (online / offline / last seen) | ✓ |
+| Exact + partial username search | ✓ |
+| User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
-| Typing indicators | Defined in contracts — not implemented |
-| Group chats | ✗ |
-| Media messages | ✗ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.5.0 changelog
+
+### Added since v0.2.0
+- **Group chats** — `CreateGroupChatRequest/Response`, `AddGroupMembersRequest`, `GroupMemberUpdateResponse`, `RemoveGroupMemberResponse`, `UpdateGroupChatRequest/Response`; `ChatType.GROUP`, `ParticipantRole.OWNER/MEMBER`
+- **Delete chat for me** — `DeleteChatForMeResponse`
+- **Mark chat as read** — `MarkChatReadResponse` for persistent unread counts
+- **Edit message** — `EditMessageRequest/Response` + `server.message.edited` event
+- **Delete for everyone** — `DeleteMessageForEveryoneRequest/Response` + `server.message.deleted_for_everyone` event + `client.message.delete_for_everyone` event
+- **Reactions** — `MessageReactionDTO`, `AddReactionRequest`, `ReactionResponse` + `client.message.reaction_set` / `client.message.reaction_remove` + `server.message.reaction_updated`
+- **Reply / Forward** — `ReplyPreviewDTO`, `replyToMessageId` and `isForwarded` fields on send
+- **Link previews** — `LinkPreviewDTO` attached to messages
+- **Media + file types** — `MessageType.IMAGE`, `MessageType.FILE`
+- **Typing indicators** — routed in v0.5 (events already existed in contracts)
+- **Avatar URL** — `UserDTO.avatarUrl`, `PublicUserDTO.avatarUrl`
+- **Error codes** — `DIRECT_CHAT_ALREADY_EXISTS`, `INVALID_MESSAGE_STATE`, `SESSION_REVOKED`, `WS_INVALID_EVENT`, `WS_AUTH_REQUIRED`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `CONFLICT`, `RATE_LIMITED`, `INTERNAL_ERROR`
+
+### v0.5.0 stabilization
+- Frontend-only "draft chat" UX is supported via the existing send-by-`recipientUsername` flow — no contract changes required; draft chat IDs (`draft:<userId>`) are not part of the protocol.
 
 ## Known limitations
 
-- `ciphertext` carries plain text in v0.2. The field name anticipates future E2EE; no encryption is applied.
-- Typing indicator events (`client.typing.start`, `client.typing.stop`, `server.typing.start`, `server.typing.stop`) are defined but not routed in v0.2.
+- `ciphertext` still carries plain text. The field name anticipates future E2EE; no encryption is applied.
+- Multi-device key exchange / Signal Protocol session contracts are not defined.
+- No contracts for push notification tokens or notification delivery receipts.
 
 ## Planned
 
-- Message edit contracts
-- Delete for everyone contracts
-- Group chat contracts
-- Media / attachment contracts
 - Signal Protocol key exchange contracts
+- Push notification token registration contracts
+- Read receipts per-participant in group chats (currently single `READ` state)
