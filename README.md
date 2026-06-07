@@ -1,8 +1,8 @@
 # Signalix Contracts
 
-**Version: v0.8.0**
+**Version: v0.9.0**
 
-> ⚠️ **v0.8.0 ships the encryption *foundation* only.** The new crypto DTOs and message envelope fields are wire-format scaffolding for a future Signal-Protocol-style E2EE rollout. Nothing in this release actually encrypts anything. v0.9.0 is the planned E2EE beta.
+> ⚠️ **v0.9.0 ships real E2EE — beta — for direct text messages only.** The v0.8.0 crypto DTOs are now populated by the v0.9.0 frontend with real X25519 / Ed25519 key material. The message envelope fields (`encryptionVersion`, `senderDeviceId`, `recipientDeviceId`, `preKeyId`, `signedPreKeyId`) ride on every encrypted message. **Not production-grade**: no Double Ratchet, no multi-device fan-out, no server-side signature verification yet. Groups, images, files, voice notes remain plaintext.
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -106,6 +106,13 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.9.0 changelog — Signal Protocol Beta
+
+### Not changed
+- The v0.8.0 crypto contracts (`DeviceIdentityKeyDTO`, `PreKeyDTO`, `SignedPreKeyDTO`, `DeviceKeyBundleDTO`, `KeyBundleResponse`, and the four request/response shapes) are unchanged. The v0.9.0 frontend simply starts using them at login.
+- The optional envelope fields on `MessageDTO`, `SendMessageRequest`, `ClientMessageSendPayload`, `ServerMessageNewPayload` are unchanged. The v0.9.0 frontend now populates them with real values (`encryptionVersion: 1`, sender/recipient device ids, prekey ids).
+- No new types. No breaking changes. v0.7.x / v0.8.0 consumers continue to compile against this package.
 
 ## v0.8.0 changelog
 
