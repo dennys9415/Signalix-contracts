@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.6.1**
+**Version: v0.7.0**
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -104,6 +104,21 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.7.0 changelog
+
+### Added
+- **`ChatDTO.avatarUrl`** and **`ChatDTO.description`** — optional fields surfaced for group chats so consumers can render avatar + description without an extra round-trip.
+- **`TransferGroupOwnershipRequest`** `{ newOwnerId }`.
+- **`TransferGroupOwnershipResponse`** `{ chatId, ownerId, previousOwnerId, participants }`.
+- **`GroupAvatarUploadResponse`** `{ chatId, avatarUrl }`.
+
+### Changed
+- **`UpdateGroupChatRequest`** — `title` made optional; new optional `description?: string | null`. At least one field is expected at runtime (API enforces). `null` on description clears the column.
+- **`UpdateGroupChatResponse`** — both `title` and `description` are now optional, mirroring the partial-update shape.
+
+### Not changed
+- No new enums or events. WebSocket protocol unchanged.
 
 ## v0.6.1 changelog
 

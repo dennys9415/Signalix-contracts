@@ -6,6 +6,10 @@ export interface ChatDTO {
   id: UUID;
   type: ChatType;
   title?: string;
+  /** Group avatar URL — public bucket URL, or undefined when no avatar is set. */
+  avatarUrl?: string;
+  /** Group description — markdown-free plain text, owner/admin editable. */
+  description?: string;
   createdBy: UUID;
   createdAt: ISODateString;
   participants: ChatParticipantDTO[];
@@ -58,11 +62,38 @@ export interface RemoveGroupMemberResponse {
   userId: UUID;
 }
 
+/**
+ * Owner / admin patch for a group chat. At least one field must be provided.
+ * Description supports `null` to clear; missing fields are left untouched.
+ */
 export interface UpdateGroupChatRequest {
-  title: string;
+  title?: string;
+  description?: string | null;
 }
 
 export interface UpdateGroupChatResponse {
   chatId: UUID;
-  title: string;
+  title?: string;
+  description?: string | null;
+}
+
+export interface TransferGroupOwnershipRequest {
+  newOwnerId: UUID;
+}
+
+/**
+ * Returned after a successful ownership transfer. The full participant list
+ * is included so clients can refresh their role chips without a second round-trip.
+ * The previous owner is demoted to `ADMIN`.
+ */
+export interface TransferGroupOwnershipResponse {
+  chatId: UUID;
+  ownerId: UUID;
+  previousOwnerId: UUID;
+  participants: ChatParticipantDTO[];
+}
+
+export interface GroupAvatarUploadResponse {
+  chatId: UUID;
+  avatarUrl: string;
 }
