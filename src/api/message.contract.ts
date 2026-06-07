@@ -36,6 +36,20 @@ export interface MessageDTO {
   replyTo?: ReplyPreviewDTO;
   isForwarded?: boolean;
   linkPreview?: LinkPreviewDTO;
+
+  // ── Encryption envelope (v0.8.0 foundation) ─────────────────────────────
+  // None of these are populated by the v0.8.0 send path — the server still
+  // sees plaintext `ciphertext`. They exist so v0.9.0 can start emitting
+  // them without a contract break. `encryptionVersion: 0` means plaintext;
+  // 1+ will be defined when the Signal-Protocol-style flow lands.
+  /** 0 = plaintext (no E2EE); 1+ = future protocol versions. */
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  /** The one-time pre-key consumed when initiating this session, if any. */
+  preKeyId?: number;
+  /** The signed pre-key referenced by this session's handshake. */
+  signedPreKeyId?: number;
 }
 
 export interface SendMessageRequest {
@@ -46,6 +60,14 @@ export interface SendMessageRequest {
   tempId?: string;
   replyToMessageId?: UUID;
   isForwarded?: boolean;
+
+  // Encryption envelope (v0.8.0 foundation). Optional and ignored unless
+  // `encryptionVersion >= 1`.
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
 }
 
 export interface SendMessageResponse {

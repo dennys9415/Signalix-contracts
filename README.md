@@ -1,6 +1,8 @@
 # Signalix Contracts
 
-**Version: v0.7.1**
+**Version: v0.8.0**
+
+> ⚠️ **v0.8.0 ships the encryption *foundation* only.** The new crypto DTOs and message envelope fields are wire-format scaffolding for a future Signal-Protocol-style E2EE rollout. Nothing in this release actually encrypts anything. v0.9.0 is the planned E2EE beta.
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -104,6 +106,25 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.8.0 changelog
+
+### Added — Encryption foundation (NOT real E2EE yet)
+
+> v0.8.0 reserves the wire format for a future Signal-Protocol-style E2EE layer. The types describe the data shapes; nothing in this package performs encryption. v0.9.0 is the real-E2EE beta.
+
+- **`src/api/crypto.contract.ts`** — new file:
+  - `KeyAlgorithm` (string-literal union, currently `'x25519'`).
+  - `DeviceIdentityKeyDTO`, `PreKeyDTO`, `SignedPreKeyDTO`, `DeviceKeyBundleDTO`, `KeyBundleResponse`.
+  - Request / response shapes for the four crypto endpoints: `RegisterDeviceKeysRequest`/`Response`, `RotateSignedPreKeyRequest`/`Response`, `UploadPreKeysRequest`/`Response`.
+  - All key/signature blobs are base64url strings on the wire.
+- **Envelope fields on existing message types** — `MessageDTO`, `SendMessageRequest`, `ClientMessageSendPayload`, `ServerMessageNewPayload` each gain optional:
+  - `encryptionVersion?: number` (0 == plaintext, 1+ reserved for future protocols)
+  - `senderDeviceId?`, `recipientDeviceId?`, `preKeyId?`, `signedPreKeyId?`
+  - All optional and ignored by v0.7.x consumers. v0.8.0 server persists them when provided; mock client never populates them.
+
+### Not changed
+- `MessageType`, `ChatType`, `ParticipantRole`, error codes, every existing DTO continues to match v0.7.x.
 
 ## v0.7.1 changelog
 

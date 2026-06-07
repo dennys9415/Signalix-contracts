@@ -11,6 +11,13 @@ export interface ClientMessageSendPayload {
   tempId?: string;
   replyToMessageId?: UUID;
   isForwarded?: boolean;
+  // ── Encryption envelope (v0.8.0 foundation) ─────────────────────────────
+  // Optional and unused until v0.9.0. `encryptionVersion: 0` == plaintext.
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
 }
 
 export interface ServerMessageSentPayload {
@@ -32,6 +39,12 @@ export interface ServerMessageNewPayload {
   replyTo?: ReplyPreviewDTO;
   isForwarded?: boolean;
   linkPreview?: LinkPreviewDTO;
+  // ── Encryption envelope (v0.8.0 foundation) ─────────────────────────────
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
 }
 
 export interface MessageStatusPayload {
