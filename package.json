@@ -1,6 +1,6 @@
 {
   "name": "@signalix/contracts",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "description": "Shared API, WebSocket, protocol, and DTO contracts for Signalix.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

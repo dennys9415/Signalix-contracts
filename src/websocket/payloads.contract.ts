@@ -1,4 +1,5 @@
 import { UUID, ISODateString } from "../shared";
+import type { SendableMessageType } from "../enums";
 import { MessageStatus, MessageType } from "../enums";
 import type { LinkPreviewDTO, MessageReactionDTO, ReplyPreviewDTO } from "../api/message.contract";
 
@@ -6,7 +7,7 @@ export interface ClientMessageSendPayload {
   chatId?: UUID;
   recipientUsername?: string;
   ciphertext: string;
-  messageType: MessageType.TEXT | MessageType.IMAGE | MessageType.FILE;
+  messageType: SendableMessageType;
   tempId?: string;
   replyToMessageId?: UUID;
   isForwarded?: boolean;

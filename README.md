@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.5.0**
+**Version: v0.6.1**
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -12,6 +12,7 @@ Single source of truth for all shared types, events, and enums across the Signal
 |---|---|
 | **API DTOs** | Request/response shapes for auth, users, chats, messages, presence |
 | **Enums** | `MessageStatus`, `MessageLifecycleState`, `MessageType`, `PresenceStatus`, `ChatType`, `ParticipantRole`, `AuthProvider`, `DeviceType` |
+| **Type aliases** | `SendableMessageType` — subset of `MessageType` that callers may emit through `client.message.send` and `POST /messages/send` (TEXT, IMAGE, FILE, AUDIO; VIDEO reserved) |
 | **Error contracts** | `ApiResponse<T>`, `ErrorCode`, `WsError` |
 | **WebSocket events** | `ClientEvent` and `ServerEvent` enums, all payload interfaces |
 | **Protocol rules** | Message lifecycle state machine, realtime routing rules |
@@ -103,6 +104,19 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.6.1 changelog
+
+### Added
+- **`SendableMessageType`** — new exported type alias from `enums/message-type.enum.ts`: `MessageType.TEXT | MessageType.IMAGE | MessageType.FILE | MessageType.AUDIO`. Single source of truth for "what callers may actually send"; consumed by API DTO, realtime WS payloads and frontend store cast.
+- **AUDIO is now a sendable type** — `ClientMessageSendPayload.messageType` and `SendMessageRequest.messageType` widened from `TEXT | IMAGE | FILE` to `SendableMessageType` so voice messages (v0.6.1 feature) pass validation end-to-end.
+
+### Fixed
+- `MessageType.AUDIO` was always part of the persistence layer (DB CHECK allows it) and of the broadcast payload (`ServerMessageNewPayload.messageType: MessageType` is the full enum), but the *sender-side* payload types silently restricted it. Voice messages would upload to MinIO successfully but then be rejected with a 400 from `class-validator` in the API. Widening the contracts removes that bottleneck.
+
+## v0.6.0 changelog
+
+No contract-level changes for PWA / Web Push themselves — the WS event surface for v0.6.0 stayed identical to v0.5.0. Web Push subscription endpoints are defined in the API repo only (REST), since they don't map to any client/server WS event.
 
 ## v0.5.0 changelog
 

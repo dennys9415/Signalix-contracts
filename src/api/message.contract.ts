@@ -1,4 +1,5 @@
 import { UUID, ISODateString, PaginationRequest, PaginationResponse } from "../shared";
+import type { SendableMessageType } from "../enums";
 import { MessageLifecycleState, MessageStatus, MessageType } from "../enums";
 
 export interface MessageReactionDTO {
@@ -41,7 +42,7 @@ export interface SendMessageRequest {
   chatId?: UUID;
   recipientUsername?: string;
   ciphertext: string;
-  messageType: MessageType.TEXT | MessageType.IMAGE | MessageType.FILE;
+  messageType: SendableMessageType;
   tempId?: string;
   replyToMessageId?: UUID;
   isForwarded?: boolean;
