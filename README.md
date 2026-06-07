@@ -1,8 +1,8 @@
 # Signalix Contracts
 
-**Version: v0.9.0**
+**Version: v0.9.1**
 
-> ⚠️ **v0.9.0 ships real E2EE — beta — for direct text messages only.** The v0.8.0 crypto DTOs are now populated by the v0.9.0 frontend with real X25519 / Ed25519 key material. The message envelope fields (`encryptionVersion`, `senderDeviceId`, `recipientDeviceId`, `preKeyId`, `signedPreKeyId`) ride on every encrypted message. **Not production-grade**: no Double Ratchet, no multi-device fan-out, no server-side signature verification yet. Groups, images, files, voice notes remain plaintext.
+> ⚠️ **v0.9.0+ ships real E2EE — beta — for direct text messages only.** v0.9.1 is a **contracts no-op release**: no DTO, event, or enum changes. All hardening landed in `Signalix-api` (server-side Ed25519 signature verification + byte-length checks) and `Signalix-frontend` (bundle validation, one-time pre-key consumption, device reset detection, decrypt failure cache, safety-number foundation). The shared crypto DTOs (`SignedPreKeyDTO`, `PreKeyDTO`, `DeviceKeyBundleDTO`, register / rotate / upload / key-bundle request and response types) and the five envelope fields on `SendMessageDto` / `MessageDTO` are unchanged. **Not production-grade**: no Double Ratchet, no multi-device fan-out yet. Groups, images, files, voice notes remain plaintext.
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -106,6 +106,12 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.9.1 changelog — E2EE hardening
+
+### Not changed
+- No DTO, enum, response, request, or event changes. v0.9.1 is purely an API + frontend hardening release; the shared contracts package is byte-identical to v0.9.0 apart from the version bump.
+- All v0.8.0 crypto DTOs and the five message envelope fields are unchanged. A v0.9.0 consumer compiles against this version with zero changes.
 
 ## v0.9.0 changelog — Signal Protocol Beta
 
