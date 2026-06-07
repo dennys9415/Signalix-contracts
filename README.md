@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.7.0**
+**Version: v0.7.1**
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -104,6 +104,19 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.7.1 changelog
+
+### Added
+- **`SearchMessagesRequest extends PaginationRequest`** `{ q, limit?, cursor? }`.
+- **`MessageSearchResultDTO`** `{ messageId, chatId, chatType, chatLabel, chatAvatarUrl?, senderId, senderName, senderAvatarUrl?, ciphertext, createdAt }`. Self-contained so the client can render a result even when the underlying chat isn't in its cache.
+- **`SearchMessagesResponse`** `{ results, pagination: { hasMore, nextCursor? } }`.
+- **`SearchInChatRequest extends PaginationRequest`** `{ q, limit?, cursor? }` — in-chat scoped variant.
+- **`InChatSearchMatchDTO`** `{ messageId, senderId, senderName, ciphertext, messageType, createdAt }` — slim payload for the per-bubble navigation UX.
+- **`SearchInChatResponse`** `{ chatId, matches, pagination }`.
+
+### Changed
+- `api/message.contract.ts` now also imports the `ChatType` enum, used by `MessageSearchResultDTO.chatType`.
 
 ## v0.7.0 changelog
 
