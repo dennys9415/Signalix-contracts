@@ -68,12 +68,63 @@ export interface SendMessageRequest {
   recipientDeviceId?: UUID;
   preKeyId?: number;
   signedPreKeyId?: number;
+
+  /**
+   * v0.10.0 — per-recipient encrypted payloads for **group E2EE beta** (text
+   * messages only). When this is non-empty and the chat is a group, the
+   * server treats the top-level `ciphertext` as a sentinel (empty string)
+   * and stores one row per entry in `group_message_recipients`. Each
+   * recipient receives only their own envelope on the wire. Ignored for
+   * direct chats and for non-TEXT message types.
+   */
+  recipients?: GroupRecipientPayloadDTO[];
+}
+
+/**
+ * v0.10.0 — one entry per device that should be able to decrypt a group
+ * encrypted text message. The sender produces one of these per recipient
+ * device by running the same X3DH-like handshake used for direct
+ * messages, just N times. Sender is NOT included here — sender-side
+ * history is served by the local plaintext cache, identical to v0.9.x.
+ */
+export interface GroupRecipientPayloadDTO {
+  recipientUserId: UUID;
+  recipientDeviceId: UUID;
+  /** Same `JSON.stringify({ v: 1, c, iv, eph })` envelope as direct E2EE. */
+  ciphertext: string;
+  encryptionVersion: number;
+  preKeyId?: number;
+  signedPreKeyId?: number;
+}
+
+/**
+ * v0.10.0 — envelope returned by the API to the realtime layer so it can
+ * fan a fan-out encrypted send out to each connected recipient device.
+ * **Keyed by recipient deviceId** (not userId) so a multi-device recipient
+ * (Brave + Chrome on the same account) gets the right per-device
+ * envelope. NOT serialized to clients directly — the realtime server
+ * consumes this and emits one `server.message.new` per recipient with
+ * the matching fields spread onto the standard payload.
+ */
+export interface RecipientEnvelopeDTO {
+  ciphertext: string;
+  encryptionVersion: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
 }
 
 export interface SendMessageResponse {
   message: MessageDTO;
   chatId: UUID;
   tempId?: string;
+  /**
+   * v0.10.0 — present only for group encrypted sends. Realtime spreads
+   * each recipient's entry onto the `server.message.new` payload it
+   * delivers to that recipient.
+   */
+  recipientPayloads?: Record<UUID, RecipientEnvelopeDTO>;
 }
 
 export interface GetMessagesRequest extends PaginationRequest {
@@ -119,6 +170,21 @@ export interface DeleteMessageForEveryoneResponse {
 
 export interface EditMessageRequest {
   ciphertext: string;
+  /**
+   * v0.10.0 — optional envelope for re-encrypted edits. When editing a
+   * v0.9.x direct E2EE message the sender re-runs the handshake to the
+   * recipient and supplies these so the recipient row reflects the new
+   * session. For group encrypted messages, the per-recipient ciphertexts
+   * go in `recipients` instead and the top-level `ciphertext` becomes a
+   * sentinel.
+   */
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
+  /** v0.10.0 — per-recipient re-encrypted payloads for group E2EE edits. */
+  recipients?: GroupRecipientPayloadDTO[];
 }
 
 export interface EditMessageResponse {
@@ -126,6 +192,8 @@ export interface EditMessageResponse {
   chatId: UUID;
   ciphertext: string;
   editedAt: ISODateString;
+  /** v0.10.0 — see `SendMessageResponse.recipientPayloads`. */
+  recipientPayloads?: Record<UUID, RecipientEnvelopeDTO>;
 }
 
 export interface AddReactionRequest {

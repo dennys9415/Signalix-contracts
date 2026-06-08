@@ -1,7 +1,8 @@
 import { UUID, ISODateString } from "../shared";
 import type { SendableMessageType } from "../enums";
 import { MessageStatus, MessageType } from "../enums";
-import type { LinkPreviewDTO, MessageReactionDTO, ReplyPreviewDTO } from "../api/message.contract";
+import type { ChatDTO } from "../api/chat.contract";
+import type { GroupRecipientPayloadDTO, LinkPreviewDTO, MessageReactionDTO, ReplyPreviewDTO } from "../api/message.contract";
 
 export interface ClientMessageSendPayload {
   chatId?: UUID;
@@ -18,6 +19,8 @@ export interface ClientMessageSendPayload {
   recipientDeviceId?: UUID;
   preKeyId?: number;
   signedPreKeyId?: number;
+  /** v0.10.0 — per-recipient encrypted payloads for group E2EE text sends. */
+  recipients?: GroupRecipientPayloadDTO[];
 }
 
 export interface ServerMessageSentPayload {
@@ -82,6 +85,14 @@ export interface ClientMessageEditPayload {
   messageId: UUID;
   chatId: UUID;
   ciphertext: string;
+  /** v0.10.0 — envelope for re-encrypted direct edits (carried through unchanged). */
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
+  /** v0.10.0 — per-recipient re-encrypted payloads for group E2EE edits. */
+  recipients?: GroupRecipientPayloadDTO[];
 }
 
 export interface ServerMessageEditedPayload {
@@ -89,6 +100,12 @@ export interface ServerMessageEditedPayload {
   chatId: UUID;
   ciphertext: string;
   editedAt: ISODateString;
+  /** v0.10.0 — when forwarded for a group encrypted edit, the per-recipient envelope. */
+  encryptionVersion?: number;
+  senderDeviceId?: UUID;
+  recipientDeviceId?: UUID;
+  preKeyId?: number;
+  signedPreKeyId?: number;
 }
 
 export interface ClientMessageReactionSetPayload {
@@ -106,4 +123,25 @@ export interface ServerMessageReactionUpdatedPayload {
   messageId: UUID;
   chatId: UUID;
   reactions: MessageReactionDTO[];
+}
+
+/**
+ * v0.10.2 — emitted by the creating client right after a REST chat
+ * create call succeeds (today: `POST /chats/group`). The realtime
+ * server fetches the canonical ChatDTO with the caller's JWT and fans
+ * out `server.chat.created` to every connected participant.
+ */
+export interface ClientChatCreatedPayload {
+  chatId: UUID;
+}
+
+/**
+ * v0.10.2 — delivered to every connected participant of a newly-
+ * created chat. The full `ChatDTO` is included so the recipient can
+ * drop it into their sidebar without an extra `GET /chats` round trip.
+ * Recipients dedupe by `chat.id` because the originating user also
+ * receives this event.
+ */
+export interface ServerChatCreatedPayload {
+  chat: ChatDTO;
 }

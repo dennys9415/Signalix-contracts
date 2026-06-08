@@ -1,8 +1,8 @@
 # Signalix Contracts
 
-**Version: v0.9.1**
+**Version: v0.10.1**
 
-> ⚠️ **v0.9.0+ ships real E2EE — beta — for direct text messages only.** v0.9.1 is a **contracts no-op release**: no DTO, event, or enum changes. All hardening landed in `Signalix-api` (server-side Ed25519 signature verification + byte-length checks) and `Signalix-frontend` (bundle validation, one-time pre-key consumption, device reset detection, decrypt failure cache, safety-number foundation). The shared crypto DTOs (`SignedPreKeyDTO`, `PreKeyDTO`, `DeviceKeyBundleDTO`, register / rotate / upload / key-bundle request and response types) and the five envelope fields on `SendMessageDto` / `MessageDTO` are unchanged. **Not production-grade**: no Double Ratchet, no multi-device fan-out yet. Groups, images, files, voice notes remain plaintext.
+> ⚠️ **v0.10.0 extends E2EE to group text messages (beta)** via per-recipient encryption fan-out. New shared types: `GroupRecipientPayloadDTO` and `RecipientEnvelopeDTO`. `SendMessageRequest`, `EditMessageRequest`, `ClientMessageSendPayload`, and `ClientMessageEditPayload` gain an optional `recipients?: GroupRecipientPayloadDTO[]`. `SendMessageResponse` and `EditMessageResponse` gain an optional `recipientPayloads?: Record<UUID, RecipientEnvelopeDTO>`. `EditMessageRequest` + `ClientMessageEditPayload` + `ServerMessageEditedPayload` also pick up the optional envelope fields so direct E2EE edits re-route correctly. All additions are optional — a v0.9.x consumer compiles against this package with zero changes. **Not production-grade**: per-recipient fan-out is `O(participants)`; Sender Keys is v0.11.0+. Group media / files / voice notes remain plaintext.
 
 Single source of truth for all shared types, events, and enums across the Signalix multi-repo system.
 
@@ -106,6 +106,32 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.10.1 changelog — Chat-created event + payload routing keying
+
+### Added
+- **`ClientEvent.CHAT_CREATED = "client.chat.created"`** + payload `ClientChatCreatedPayload { chatId }`. Emitted by the creator after a REST chat-create succeeds so the realtime layer can fan out.
+- **`ServerEvent.CHAT_CREATED = "server.chat.created"`** + payload `ServerChatCreatedPayload { chat: ChatDTO }`. Delivered to every participant connection. Recipients dedupe by `chat.id`.
+
+### Clarified
+- **`RecipientEnvelopeDTO`** doc updated: the API → realtime fan-out map is keyed by **`deviceId`** (not userId) so multi-device recipients each get their own envelope. No type change.
+
+### Not changed
+- No DTO field additions or removals. The two new events are additive on existing enums.
+
+## v0.10.0 changelog — Group E2EE beta
+
+### Added
+- **`GroupRecipientPayloadDTO`** — one entry per device that should be able to decrypt a group encrypted text message. Fields: `recipientUserId`, `recipientDeviceId`, `ciphertext`, `encryptionVersion`, optional `preKeyId`, optional `signedPreKeyId`.
+- **`RecipientEnvelopeDTO`** — API → realtime hand-off shape for the per-recipient ciphertext + envelope used to build the personalized `server.message.new` / `server.message.edited` payloads. Keyed by recipient userId in `recipientPayloads`.
+- **`SendMessageRequest.recipients?`** + **`EditMessageRequest.recipients?`** — per-recipient payloads for group encrypted text. Ignored for direct chats and non-TEXT message types.
+- **`ClientMessageSendPayload.recipients?`** + **`ClientMessageEditPayload.recipients?`** — same shape over the WS wire.
+- **`SendMessageResponse.recipientPayloads?`** + **`EditMessageResponse.recipientPayloads?`** — internal to the API → realtime fan-out; clients never see this directly.
+- **Envelope fields on `EditMessageRequest`, `ClientMessageEditPayload`, `ServerMessageEditedPayload`** (`encryptionVersion`, `senderDeviceId`, `recipientDeviceId`, `preKeyId`, `signedPreKeyId`). Lets direct E2EE edits re-route the recipient's session state when the sender re-encrypts, and lets group encrypted edits ship their per-recipient envelope on the existing event.
+
+### Not changed
+- v0.9.x crypto DTOs (`SignedPreKeyDTO`, `PreKeyDTO`, `DeviceKeyBundleDTO`, register / rotate / upload / key-bundle) — unchanged.
+- All other DTOs, response shapes, event names, enums — unchanged. No breaking changes.
 
 ## v0.9.1 changelog — E2EE hardening
 
