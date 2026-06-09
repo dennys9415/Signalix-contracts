@@ -1,7 +1,7 @@
-src
-rules
-protocol
-schema
-tools
-versions
+/src
+/rules
+/protocol
+/schema
+/tools
+/versions
 *.log

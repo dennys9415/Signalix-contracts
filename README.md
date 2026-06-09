@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.15.0**
+**Version: v0.16.0**
 
 > ⚠️ **v0.10.0 extends E2EE to group text messages (beta)** via per-recipient encryption fan-out. New shared types: `GroupRecipientPayloadDTO` and `RecipientEnvelopeDTO`. `SendMessageRequest`, `EditMessageRequest`, `ClientMessageSendPayload`, and `ClientMessageEditPayload` gain an optional `recipients?: GroupRecipientPayloadDTO[]`. `SendMessageResponse` and `EditMessageResponse` gain an optional `recipientPayloads?: Record<UUID, RecipientEnvelopeDTO>`. `EditMessageRequest` + `ClientMessageEditPayload` + `ServerMessageEditedPayload` also pick up the optional envelope fields so direct E2EE edits re-route correctly. All additions are optional — a v0.9.x consumer compiles against this package with zero changes. **Not production-grade**: per-recipient fan-out is `O(participants)`; Sender Keys is v0.11.0+. Group media / files / voice notes remain plaintext.
 
@@ -106,6 +106,14 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.16.0 changelog — Mobile foundation MVP
+
+### Fixed
+- **`.npmignore`** — anchored the `src` / `rules` / `protocol` / `schema` / `tools` / `versions` exclusion patterns with a leading `/` so they only match the top-level repo folders, not the same-named subdirectories under `dist/`. The previous patterns excluded `dist/protocol/` from the npm pack, which broke `@signalix/contracts` consumers (including the new `Signalix-mobile` app) at runtime — `dist/index.js` re-exports `./protocol` so the missing folder surfaced as `Unable to resolve module ./protocol`.
+
+### Not changed
+- No DTO, enum, response, request, or event changes. The TypeScript surface of the published package is byte-identical to v0.15.0. The fix is packaging-only.
 
 ## v0.15.0 changelog — Key backup & device recovery (contracts no-op)
 
