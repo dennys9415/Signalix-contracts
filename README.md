@@ -1,6 +1,6 @@
 # Signalix Contracts
 
-**Version: v0.13.0**
+**Version: v0.14.0**
 
 > ⚠️ **v0.10.0 extends E2EE to group text messages (beta)** via per-recipient encryption fan-out. New shared types: `GroupRecipientPayloadDTO` and `RecipientEnvelopeDTO`. `SendMessageRequest`, `EditMessageRequest`, `ClientMessageSendPayload`, and `ClientMessageEditPayload` gain an optional `recipients?: GroupRecipientPayloadDTO[]`. `SendMessageResponse` and `EditMessageResponse` gain an optional `recipientPayloads?: Record<UUID, RecipientEnvelopeDTO>`. `EditMessageRequest` + `ClientMessageEditPayload` + `ServerMessageEditedPayload` also pick up the optional envelope fields so direct E2EE edits re-route correctly. All additions are optional — a v0.9.x consumer compiles against this package with zero changes. **Not production-grade**: per-recipient fan-out is `O(participants)`; Sender Keys is v0.11.0+. Group media / files / voice notes remain plaintext.
 
@@ -106,6 +106,16 @@ Changes to contracts require rebuilding all three downstream services.
 | User profile (display name, avatar upload, providers) | ✓ |
 | JWT-authenticated WebSocket | ✓ |
 | Signal Protocol / E2EE | ✗ (contracts designed to support it in future) |
+
+## v0.14.0 changelog — Read receipts contract additions
+
+### Added
+- **`GetMessageRecipientsStatusResponse { messageId: UUID; statuses: MessageStatusDTO[] }`** — return shape for the new `GET /messages/:id/recipients/status` endpoint. Used by the Message Info dialog.
+- **`GetMessagesRequest.since?: ISODateString`** — reconnect-sync cursor. Additive optional field.
+- **`GetMessagesResponse.statusUpdates?: MessageStatusDTO[]`** — receipts that fired strictly after the request's `since` cursor. Only present when `since` was provided.
+
+### Not changed
+- All other DTOs, event names, payloads — identical to v0.13.0.
 
 ## v0.13.0 changelog — Message search (contracts no-op)
 

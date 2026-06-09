@@ -130,11 +130,25 @@ export interface SendMessageResponse {
 export interface GetMessagesRequest extends PaginationRequest {
   chatId: UUID;
   before?: ISODateString;
+  /**
+   * v0.14.0 — reconnect-sync cursor. When provided, the response also
+   * carries any status updates whose timestamp is strictly after `since`
+   * (in `statusUpdates`), so the client can catch up on receipts that
+   * fired while the WS was disconnected.
+   */
+  since?: ISODateString;
 }
 
 export interface GetMessagesResponse {
   messages: MessageDTO[];
   pagination: PaginationResponse;
+  /**
+   * v0.14.0 — present only when the request carried `since`. Holds the
+   * per-recipient status changes that fired strictly after that cursor
+   * (delivered + read receipts the client may have missed while its WS
+   * was disconnected).
+   */
+  statusUpdates?: MessageStatusDTO[];
 }
 
 export interface MessageStatusDTO {
@@ -142,6 +156,17 @@ export interface MessageStatusDTO {
   userId: UUID;
   status: MessageStatus;
   timestamp: ISODateString;
+}
+
+/**
+ * v0.14.0 — `GET /messages/:messageId/recipients/status`. Returns one
+ * row per chat participant (excluding the sender), so the Message Info
+ * dialog can list who delivered + who read with timestamps. The sender
+ * row never appears because the sender's own state is always implicit.
+ */
+export interface GetMessageRecipientsStatusResponse {
+  messageId: UUID;
+  statuses: MessageStatusDTO[];
 }
 
 export interface UpdateMessageStatusRequest {
