@@ -5,3 +5,4 @@ export * from "./chat.contract";
 export * from "./message.contract";
 export * from "./presence.contract";
 export * from "./crypto.contract";
+export * from "./call.contract";

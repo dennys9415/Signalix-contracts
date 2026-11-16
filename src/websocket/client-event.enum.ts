@@ -19,5 +19,13 @@ export enum ClientEvent {
    * `server.chat.created` to every connected participant — letting them
    * surface the new chat in their sidebar without a manual refresh.
    */
-  CHAT_CREATED = "client.chat.created"
+  CHAT_CREATED = "client.chat.created",
+  // v0.17.0 — 1:1 voice / video call signaling (see protocol/call-flow.md)
+  CALL_INVITE = "client.call.invite",
+  CALL_RINGING = "client.call.ringing",
+  CALL_ACCEPT = "client.call.accept",
+  CALL_REJECT = "client.call.reject",
+  CALL_HANGUP = "client.call.hangup",
+  CALL_ICE_CANDIDATE = "client.call.ice_candidate",
+  CALL_MEDIA_UPDATE = "client.call.media_update"
 }

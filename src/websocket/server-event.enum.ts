@@ -19,5 +19,13 @@ export enum ServerEvent {
    * chats remain message-bootstrapped). Recipients dedupe by `chat.id`
    * because the creating user receives it too.
    */
-  CHAT_CREATED = "server.chat.created"
+  CHAT_CREATED = "server.chat.created",
+  // v0.17.0 — 1:1 voice / video call signaling (see protocol/call-flow.md)
+  CALL_INCOMING = "server.call.incoming",
+  CALL_RINGING = "server.call.ringing",
+  CALL_ACCEPTED = "server.call.accepted",
+  CALL_ANSWERED_ELSEWHERE = "server.call.answered_elsewhere",
+  CALL_ENDED = "server.call.ended",
+  CALL_ICE_CANDIDATE = "server.call.ice_candidate",
+  CALL_MEDIA_UPDATE = "server.call.media_update"
 }
