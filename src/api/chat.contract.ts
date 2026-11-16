@@ -33,6 +33,15 @@ export interface DeleteChatForMeResponse {
   deletedAt: ISODateString;
 }
 
+/**
+ * Clear chat — hides every message up to now for this user (same cutoff as
+ * delete-for-me) but keeps the chat in their list.
+ */
+export interface ClearChatResponse {
+  chatId: UUID;
+  clearedAt: ISODateString;
+}
+
 export interface MarkChatReadResponse {
   chatId: UUID;
   lastReadMessageId?: UUID;
